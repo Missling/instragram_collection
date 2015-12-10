@@ -43,11 +43,16 @@ class CollectionsController < ApplicationController
   def fetch_photos(collection)
     response = HTTParty.get("https://api.instagram.com/v1/tags/#{collection.hashtag}/media/recent?access_token=#{ENV['API_KEY']}")
 
+    save_photo(response, collection)
+  end
+
+
+  def save_photo(response, collection)
     while response["pagination"]["next_url"]
       next_url = response["pagination"]["next_url"]
 
       response["data"].each do |photo|
-        created_time = Time.at(photo["created_time"].to_i).to_date
+        created_time = Time.at(photo["created_time"].to_i).to_date 
 
         next unless (collection.start_date..collection.end_date).cover?(created_time)
 
@@ -72,11 +77,20 @@ class CollectionsController < ApplicationController
             end
           end
         end
-
         @photo.save 
       end
-
+    end
       response = HTTParty.get(next_url)      
     end
+
+  def recovery
+    last_photo = Photo.last
+    last_photo_id = (last_photo.photo_id.split("_").first) - 1
+    last_photo_hashtag = last_photo.collection.hashtag
+    collection = last_photo.collection
+
+    response = HTTParty.get("https://api.instagram.com/v1/tags/#{last_photo_hashtag}/media/recent?access_token=#{ENV['API_KEY']}&max_tag_id=#{last_photo_id}")
+
+    save_photo(response, collection)
   end
 end
