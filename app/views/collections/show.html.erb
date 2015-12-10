@@ -1,0 +1,11 @@
+<h1><%= @collection.hashtag %></h1>
+<h3><%= @collection.start_date %></h3>
+<h3><%= @collection.end_date %></h3>
+
+<% @photos.each do |photo| %>
+  <div>
+    <p>Tag Time: <%= photo.tag_time %></p>
+    <p>Link: <%= photo.link %></p>
+    <p>User: <%= photo.user %></p>
+  </div>
+<% end %>

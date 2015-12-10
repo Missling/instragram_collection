@@ -1,3 +1,3 @@
 class Collection < ActiveRecord::Base
-  has_many :medias
+  has_many :photos
 end

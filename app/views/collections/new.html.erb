@@ -1,0 +1,12 @@
+<%= form_for @collection do |f| %>
+  <%= f.label :hashtag %>:
+  <%= f.text_field :hashtag %><br />
+
+  <%= f.label :start_date %>:
+  <%= f.date_field :start_date %><br />
+
+  <%= f.label :end_date %>:
+  <%= f.date_field :end_date %><br />
+
+  <%= f.submit %>
+<% end %>

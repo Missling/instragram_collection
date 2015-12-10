@@ -18,17 +18,20 @@ ActiveRecord::Schema.define(version: 20151207210418) do
 
   create_table "collections", force: :cascade do |t|
     t.string   "hashtag"
-    t.datetime "start_date"
-    t.datetime "end_date"
+    t.date     "start_date"
+    t.date     "end_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "media", force: :cascade do |t|
-    t.integer  "collections_id"
-    t.datetime "tag_time"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+  create_table "photos", force: :cascade do |t|
+    t.integer  "collection_id"
+    t.date     "tag_time"
+    t.string   "link"
+    t.string   "user"
+    t.string   "photo_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
 end
