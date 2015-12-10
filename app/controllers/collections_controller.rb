@@ -31,7 +31,7 @@ class CollectionsController < ApplicationController
 
     @collection.save
        
-    fetch_photo(@collection.hashtag, @collection.start_date, @collection.end_date)
+    fetch_photos(@collection)
 
     if @collection.save
       redirect_to root_path
@@ -40,37 +40,43 @@ class CollectionsController < ApplicationController
     end
   end
 
-  def fetch_photo(hashtag, start_date, end_date)
-    response = HTTParty.get("https://api.instagram.com/v1/tags/#{hashtag}/media/recent?access_token=#{ENV[‘API_KEY’]}")
+  def fetch_photos(collection)
+    response = HTTParty.get("https://api.instagram.com/v1/tags/#{collection.hashtag}/media/recent?access_token=#{ENV['API_KEY']}")
 
-    response["data"].each do |photo|
-      created_time = Time.at(photo["created_time"].to_i).to_date
+    while response["pagination"]["next_url"]
+      next_url = response["pagination"]["next_url"]
 
-      next unless (start_date..end_date).cover?(created_time)
+      response["data"].each do |photo|
+        created_time = Time.at(photo["created_time"].to_i).to_date
 
-      @photo = Photo.new(
-        tag_time: created_time,
-        link: photo["link"],
-        user: photo["user"]["username"],
-        photo_id: photo["id"],
-        collection_id: @collection.id,
-      )
+        next unless (collection.start_date..collection.end_date).cover?(created_time)
 
-      if !photo["caption"]["text"].downcase.include?(hashtag.downcase)
+        @photo = Photo.new(
+          tag_time: created_time,
+          link: photo["link"],
+          user: photo["user"]["username"],
+          photo_id: photo["id"],
+          collection_id: collection.id,
+        )
 
-        comment_response = HTTParty.get("https://api.instagram.com/v1/media/#{photo["id"]}/comments?access_token=#{ENV[‘API_KEY’]}")
+        if !photo["caption"]["text"].downcase.include?(collection.hashtag.downcase)
 
-        comment_response["data"].each do |comment|
+          comment_response = HTTParty.get("https://api.instagram.com/v1/media/#{photo["id"]}/comments?access_token=#{ENV['API_KEY']}")
 
-          if comment["text"].downcase.include?(hashtag.downcase)
+          comment_response["data"].each do |comment|
 
-            @photo.tag_time = comment["created_time"]
-            break
+            if comment["text"].downcase.include?(collection.hashtag.downcase)
+
+              @photo.tag_time = comment["created_time"]
+              break
+            end
           end
         end
+
+        @photo.save 
       end
 
-      @photo.save 
+      response = HTTParty.get(next_url)      
     end
   end
 end
