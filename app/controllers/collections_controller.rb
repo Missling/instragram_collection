@@ -1,5 +1,6 @@
 require 'httparty'
 require 'instagram'
+require 'puma'
 
 class CollectionsController < ApplicationController
 
