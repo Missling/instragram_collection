@@ -4,6 +4,7 @@ class CreateCollections < ActiveRecord::Migration
       t.string :hashtag
       t.date :start_date
       t.date :end_date
+      t.boolean :completed, default: false
 
       t.timestamps null: false
     end

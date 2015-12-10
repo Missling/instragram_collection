@@ -20,8 +20,9 @@ ActiveRecord::Schema.define(version: 20151207210418) do
     t.string   "hashtag"
     t.date     "start_date"
     t.date     "end_date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.boolean  "completed",  default: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
   end
 
   create_table "photos", force: :cascade do |t|

@@ -1,5 +1,10 @@
 <% @collections.each do |collection| %>
-  <p>Hashtag: <%= collection.hashtag %></p>
+  <%= link_to "Hashtag: #{collection.hashtag}", collection_path(collection) %>
   <p>Start Date: <%= collection.start_date %></p>
   <p>End Date: <%= collection.end_date %></p>
+  <% if collection.completed != true %>
+    <%= link_to "Retry", recovery_path(collection) %>
+  <% end %>
 <% end %>
+
+<%= link_to "Create New Collection", new_collection_path %>

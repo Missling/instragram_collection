@@ -48,9 +48,7 @@ class CollectionsController < ApplicationController
 
 
   def save_photo(response, collection)
-    while response["pagination"]["next_url"]
-      next_url = response["pagination"]["next_url"]
-
+    while response
       response["data"].each do |photo|
         created_time = Time.at(photo["created_time"].to_i).to_date 
 
@@ -79,12 +77,20 @@ class CollectionsController < ApplicationController
         end
         @photo.save 
       end
-    end
-      response = HTTParty.get(next_url)      
-    end
+      next_url = response["pagination"]["next_url"]
 
-  def recovery
-    last_photo = Photo.last
+      if next_url
+        response = HTTParty.get(next_url)
+      else
+        response = nil
+      end
+    end
+    collection.completed = true
+  end
+
+  def recover
+    collection_id = params[:id]
+    last_photo = Photo.where(collection_id: collection_id).last
     last_photo_id = (last_photo.photo_id.split("_").first) - 1
     last_photo_hashtag = last_photo.collection.hashtag
     collection = last_photo.collection
