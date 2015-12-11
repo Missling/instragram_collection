@@ -3,7 +3,7 @@
   <p>Start Date: <%= collection.start_date %></p>
   <p>End Date: <%= collection.end_date %></p>
   <% if collection.completed != true %>
-    <%= link_to "Retry", recovery_path(collection) %>
+    <%= link_to "Retry", recover_collection_path(collection), method: :post %>
   <% end %>
 <% end %>
 

@@ -44,16 +44,17 @@ class CollectionsController < ApplicationController
   def fetch_photos(collection)
     response = HTTParty.get("https://api.instagram.com/v1/tags/#{collection.hashtag}/media/recent?access_token=#{ENV['API_KEY']}")
 
-    save_photo(response, collection)
+    save_photos(response, collection)
   end
 
 
-  def save_photo(response, collection)
+  def save_photos(response, collection)
     while response
       response["data"].each do |photo|
         created_time = Time.at(photo["created_time"].to_i).to_date 
 
-        next unless (collection.start_date..collection.end_date).cover?(created_time)
+        next if created_time > collection.end_date
+        break if created_time < collection.start_date
 
         @photo = Photo.new(
           tag_time: created_time,
@@ -71,7 +72,7 @@ class CollectionsController < ApplicationController
 
             if comment["text"].downcase.include?(collection.hashtag.downcase)
 
-              @photo.tag_time = comment["created_time"]
+              @photo.tag_time = Time.at(comment["created_time"].to_i).to_date
               break
             end
           end
@@ -87,17 +88,22 @@ class CollectionsController < ApplicationController
       end
     end
     collection.completed = true
+    collection.save
   end
 
   def recover
     collection_id = params[:id]
     last_photo = Photo.where(collection_id: collection_id).last
-    last_photo_id = (last_photo.photo_id.split("_").first) - 1
+    last_photo_id = ((last_photo.photo_id.split("_").first).to_i - 1).to_s
     last_photo_hashtag = last_photo.collection.hashtag
     collection = last_photo.collection
 
     response = HTTParty.get("https://api.instagram.com/v1/tags/#{last_photo_hashtag}/media/recent?access_token=#{ENV['API_KEY']}&max_tag_id=#{last_photo_id}")
 
-    save_photo(response, collection)
+    save_photos(response, collection)
+
+    redirect_to root_path
   end
 end
+
+
